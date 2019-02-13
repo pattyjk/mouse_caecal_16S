@@ -65,3 +65,18 @@ cat mergedfastq/closed_reference.fasta mergedfastq/denovo_otus.fasta > full_rep_
 ```
 ./usearch64 -usearch_global mergedfastq/merged.fq -db full_rep_set.fna  -strand plus -id 0.97 -uc OTU_map.uc -otutabout OTU_table.txt
 ```
+
+## Assign taxonomy with SILVA 
+```
+assign_taxonomy.py -i full_rep_set.fna -o taxonomy -r Silva_128_release/SILVA_128_QIIME_release/rep_set/rep_set_16S_only/97/97_otus_16S.fasta -t '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/Silva_128_release/SILVA_128_QIIME_release/taxonomy/16S_only/97/consensus_taxonomy_all_levels.txt'
+
+#add tax to OTU table
+biom convert -i OTU_table.txt -o OTU_table.biom --table-type='OTU table' --to-hdf5
+
+biom add-metadata -i OTU_table.biom -o otu_table_tax.biom --observation-metadata-fp=taxonomy/full_rep_set_tax_assignments.txt --sc-separated=taxonomy --observation-header=OTUID,taxonomy
+
+#summarize OTU table
+biom summarize-table -i otu_table_tax.biom -o otu_table_summmary.txt
+```
+
+
