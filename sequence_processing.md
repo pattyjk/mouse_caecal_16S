@@ -1,6 +1,6 @@
-## Processing of 16S rRNA gene amplicons
+# Processing of 16S rRNA gene amplicons
 
-### Merge Paired End Reads
+## Merge Paired End Reads
 ```
 #decompress the reads
 gunzip *.gz
