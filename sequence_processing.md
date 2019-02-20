@@ -7,7 +7,9 @@ gunzip *.gz
 
 mkdir mergedfastq
 
-./usearch64 -fastq_mergepairs *R1*.fastq -relabel @ -fastq_maxdiffs 10 -fastqout mergedfastq/merged.fq -fastq_merge_maxee 1.0 -fastq_minmergelen 250 -fastq_maxmergelen 300
+./usearch64 -fastq_mergepairs *R1*.fastq -relabel @  -fastq_maxdiffs 10  -fastqout mergedfastq/merged.fq -fastq_merge_maxee 1.0 -fastq_minmergelen 250 -fastq_maxmergelen 300
+
+  
 
    8443547  Pairs (8.4M)
    7172229  Merged (7.2M, 84.94%)
@@ -49,7 +51,7 @@ mkdir mergedfastq
 ./usearch64 -usearch_global mergedfastq/denoised_nosigs_uniques_combined_merged.fastq -id 0.97 -db ./Silva_128_release/SILVA_128_QIIME_release/rep_set/rep_set_16S_only/97/97_otus_16S.fasta  -strand plus -uc mergedfastq/ref_seqs.uc -dbmatched mergedfastq/closed_reference.fasta -notmatchedfq mergedfastq/failed_closed.fq
 ```
 
-## Sort by size and then de novo OTU picking on sequences that failed to hit GreenGenes
+## Sort by size and then de novo OTU picking on sequences that failed to hit Silva
 ```
 ./usearch64 -sortbysize mergedfastq/failed_closed.fq -fastaout mergedfastq/sorted_failed_closed.fq
 
@@ -63,7 +65,7 @@ cat mergedfastq/closed_reference.fasta mergedfastq/denovo_otus.fasta > full_rep_
 
 ## Map rep_set back to pre-dereplicated sequences and make OTU tables
 ```
-./usearch64 -usearch_global mergedfastq/merged.fq -db full_rep_set.fna  -strand plus -id 0.97 -uc OTU_map.uc -otutabout OTU_table.txt
+./usearch64 -usearch_global mergedfastq/merged.fq -db mergedfastq/full_rep_set.fna -strand plus -id 0.97 -uc OTU_map.uc -otutabout OTU_table.txt
 ```
 
 ## Assign taxonomy with SILVA 
@@ -77,6 +79,14 @@ biom add-metadata -i OTU_table.biom -o otu_table_tax.biom --observation-metadata
 
 #summarize OTU table
 biom summarize-table -i otu_table_tax.biom -o otu_table_summmary.txt
+
+#convert back to text file
+biom convert -i '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/otu_table_tax.biom' -o '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/otu_table_tax.txt' --to-tsv --table-type='OTU table' --header-key taxonomy
+```
+
+## Summarize taxonomy
+```
+summarize_taxa_through_plots.py -i otu_table_tax.biom -o tax_summary
 ```
 
 
