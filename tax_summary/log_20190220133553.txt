@@ -1,0 +1,43 @@
+Logging started at 13:35:53 on 20 Feb 2019
+QIIME version: 1.9.1
+
+qiime_config values:
+pick_otus_reference_seqs_fp	/home/pattyjk/anaconda3/envs/qiime1/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta
+sc_queue	all.q
+pynast_template_alignment_fp	/home/pattyjk/anaconda3/envs/qiime1/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.pynast.fasta
+cluster_jobs_fp	start_parallel_jobs.py
+assign_taxonomy_reference_seqs_fp	/home/pattyjk/anaconda3/envs/qiime1/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta
+torque_queue	friendlyq
+jobs_to_start	1
+denoiser_min_per_core	50
+assign_taxonomy_id_to_taxonomy_fp	/home/pattyjk/anaconda3/envs/qiime1/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt
+temp_dir	/tmp/
+blastall_fp	blastall
+seconds_to_sleep	1
+
+parameter file values:
+
+Input file md5 sums:
+otu_table_tax.biom: 3343755d64b37332edb90ec4a7a0692a
+
+Executing commands.
+
+# Summarize Taxonomy command 
+summarize_taxa.py -i otu_table_tax.biom -o tax_summary 
+
+Stdout:
+
+Stderr:
+
+# Plot Taxonomy Summary command 
+plot_taxa_summary.py -i tax_summary/otu_table_tax_L2.txt,tax_summary/otu_table_tax_L3.txt,tax_summary/otu_table_tax_L4.txt,tax_summary/otu_table_tax_L5.txt,tax_summary/otu_table_tax_L6.txt -o tax_summary/taxa_summary_plots/ 
+
+Stdout:
+
+Stderr:
+QGtkStyle could not resolve GTK. Make sure you have installed the proper libraries.
+/home/pattyjk/anaconda3/envs/qiime1/lib/python2.7/site-packages/matplotlib/collections.py:590: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+  if self._edgecolors == str('face'):
+
+
+Logging stopped at 13:39:31 on 20 Feb 2019
