@@ -43,7 +43,7 @@ mkdir mergedfastq
 ./usearch64 -cluster_fast mergedfastq/nosigs_uniques_combined_merged.fastq -centroids_fastq mergedfastq/denoised_nosigs_uniques_combined_merged.fastq -id 0.9 -maxdiffs 5 -abskew 10 -sizein -sizeout -sort size
 ```
 
-## Reference-based OTU picking against the Silva v. 1.28
+## Reference-based OTU picking against the Silva v. 1.32
 ```
 #pull Silva and extract it
 # wget https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_128_release.tgz
