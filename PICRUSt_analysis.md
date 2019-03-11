@@ -14,6 +14,7 @@ http://qiime.org/home_static/dataFiles.html
 ./usearch64 -usearch_global mergedfastq/merged.fq'-db mergedfastq/picrust_closed_reference.fasta -strand plus -id 0.97 -uc mergedfastq/picrust_OTU_map.uc -otutabout picrust_OTU_table.txt
 
 #convert to JSON biom
+biom convert -i picrust_OTU_table.txt'-o picrust_OTU_table.biom --to-json --table-type="OTU table"
 
 #analysis on Galaxy
 http://huttenhower.sph.harvard.edu/galaxy/
