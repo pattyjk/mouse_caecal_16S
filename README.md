@@ -7,4 +7,4 @@ PK= viatamin k1
 Pork= yummy pork
 VKdef= minimum vitamin K
 
-Mouse fed standard laboratory mouse chow (less yummy)
+Mouse fed standard laboratory mouse chow (less yummy) without vitamin K
