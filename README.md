@@ -6,3 +6,5 @@ MK9= a type of vita K, longer chain
 PK= viatamin k1
 Pork= yummy pork
 VKdef= minimum vitamin K
+
+Mouse fed standard laboratory mouse chow (less yummy)
