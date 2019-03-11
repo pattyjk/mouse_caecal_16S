@@ -2,11 +2,13 @@
 library(ggplot2)
 library(vegan)
 
-otu_table<-read.delim("~/Desktop/otu_table_tax.txt", header=T, row.names = 1)
+#read in OTU table
+otu_table<-read.delim("~/Desktop/mouse_caecal_16S/otu_table_tax_R.txt", header=T, row.names = 1)
 dim(otu_table)
 #3294 by 116
 
-meta<-read.delim("~/Desktop/mouse_metadata.txt", header=T)
+#read in meta data
+meta<-read.delim("~/Desktop/mouse_caecal_16S/mouse_metadata.txt", header=T)
 dim(meta)
 # 117 by 10
 
@@ -18,23 +20,39 @@ otu_table_t<-t(otu_table)
 
 #get sample counts
 counts<-rowSums(otu_table_t)
-which(rowSums(otu_table_t)<1000)
+which(rowSums(otu_table_t)<3000)
 
-#remove sample M30
-otu_table_t<-otu_table_t[-39,]
+#remove sample M30 and M21
+otu_table_t<-otu_table_t[c(-39, -29),]
+
+#plot rarefaction curve
+#rarecurve(otu_table_t)
 
 #rarefy data
 min(rowSums(otu_table_t))
-#2893
+#11,510
+otu_table_t<-rrarefy(otu_table_t, sample=11510)
 
-otu_table_t<-rrarefy(otu_table_t, sample=2893)
-
+#calculate PCoA
 mouse_pcoa<-capscale(otu_table_t  ~ 1, distance='bray')
 
+#pull out x/y coordinates
 mouse.scores<-scores(mouse_pcoa)
+
+#grab only sample coordinates, write to data frame
 mouse.coords<-as.data.frame(mouse.scores$sites)
+
+#create sample names as a column
 mouse.coords$SampleID<-row.names(mouse.coords)
+
+#map back meta data
 mouse.coords<-merge(mouse.coords, meta, by.x='SampleID', by.y='Sample')
+
+#calculate percent variation explained
+100*round(mouse_pcoa$CA$eig[1]/sum(mouse_pcoa$CA$eig), 3)
+#10.4
+100*round(mouse_pcoa$CA$eig[2]/sum(mouse_pcoa$CA$eig), 3)
+#7.5
 
 #plot by group
 ggplot(mouse.coords, aes(MDS1, MDS2, colour=Diet_group))+
@@ -61,11 +79,71 @@ mouse.male<-otu_table_t[row.names(otu_table_t) %in% meta_split$M$Sample,]
 mouse.female<-otu_table_t[row.names(otu_table_t) %in% meta_split$F$Sample,]
 
 
+female.pcoa<-capscale(mouse.female ~ 1, distance = 'bray')
+male.pcoa<-capscale(mouse.male ~ 1, distance = 'bray')
 
-#Make new map
-tiss_map<- subset(map, Sample_Type=="Gills" | Sample_Type=="Stomach")
-#Get rows that match IDs in map
-tiss_df<-weighted_u[rownames(weighted_u) %in% tiss_map$SampleID, ]
-#gets columns that match IDs in map
-tiss_df1<-tiss_df[ ,colnames(tiss_df) %in% tiss_map$SampleID]
+
+female.scores<-scores(female.pcoa)
+female.coords<-as.data.frame(female.scores$sites)
+female.coords$SampleID<-row.names(female.coords)
+female.coords<-merge(female.coords, meta, by.x='SampleID', by.y='Sample')
+
+ggplot(female.coords, aes(MDS1, MDS2, colour=Sex))+
+  geom_point(aes(size=2))+
+  theme_bw()
+
+ggplot(female.coords, aes(MDS1, MDS2, colour=Diet_group, label=SampleID))+
+  geom_point(aes(size=2))+
+  theme_bw()+
+  geom_text(hjust=2)
+
+
+male.scores<-scores(male.pcoa)
+male.coords<-as.data.frame(male.scores$sites)
+male.coords$SampleID<-row.names(male.coords)
+male.coords<-merge(male.coords, meta, by.x='SampleID', by.y='Sample')
+
+ggplot(male.coords, aes(MDS1, MDS2, colour=Sex))+
+  geom_point(aes(size=2))+
+  theme_bw()
+
+ggplot(male.coords, aes(MDS1, MDS2, colour=Diet_group))+
+  geom_point(aes(size=2))+
+  theme_bw()
+
+###########Calculate Alpha diversity
+mouse.shan<-diversity(otu_table_t, index='shannon')
+mouse.obs<-rowSums(otu_table_t>0)
+mouse.even<-(diversity(otu_table_t))/mouse.obs
+
+mouse.div<-as.data.frame(cbind(mouse.shan, mouse.obs, mouse.even))
+mouse.div$SampleID<-row.names(mouse.div)
+
+#add metadata
+mouse.div<-merge(mouse.div, meta, by.x='SampleID', by.y='Sample')
+
+ggplot(mouse.div, aes(Sex, mouse.shan, fill=Diet_group))+
+  geom_boxplot()+
+  theme_bw()
+
+ggplot(mouse.div, aes(Sex, mouse.obs, fill=Diet_group))+
+  geom_boxplot()+
+  theme_bw()
+
+ggplot(mouse.div, aes(Sex, mouse.even, fill=Diet_group))+
+  geom_boxplot()+
+  theme_bw()
+
+#split by sex
+mouse.div.split<-split(mouse.div, mouse.div$Sex)
+
+bartlett.test(mouse.div$mouse.obs ~ mouse.div$Sex)
+t.test(mouse.div$mouse.even ~ mouse.div$Sex)
+kruskal.test(mouse.div$mouse.obs ~ mouse.div$Sex)
+
+
+pairwise.t.test(mouse.div.split$F$mouse.even, mouse.div.split$F$Diet_group, p.adjust.method = 'BH')
+pairwise.t.test(mouse.div.split$M$mouse.even, mouse.div.split$M$Diet_group, p.adjust.method = 'BH')
+
+
 ```
