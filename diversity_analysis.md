@@ -138,7 +138,7 @@ ggplot(mouse.div, aes(Sex, mouse.even, fill=Diet_group))+
 mouse.div.split<-split(mouse.div, mouse.div$Sex)
 
 bartlett.test(mouse.div$mouse.obs ~ mouse.div$Sex)
-t.test(mouse.div$mouse.even ~ mouse.div$Sex)
+t.test(mouse.div$mouse.obs ~ mouse.div$Sex)
 kruskal.test(mouse.div$mouse.obs ~ mouse.div$Sex)
 
 
