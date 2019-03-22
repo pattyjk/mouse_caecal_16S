@@ -1,5 +1,3 @@
-
-
 ###  Cluster Zero Radius OTUs (ZOTUs)
 ```
 #use dereplicated reads
@@ -16,4 +14,9 @@ grep -c '>' zotus.fa
 ### Map reads at 97% to ZOTUs
 ```
 usearch64 -otutab mergedfastq/merged.fq -otus zotus.fa -uc zotus_mapped.uc -otutabout zotus_table.txt -notmatchedfq zotus_not_matched.fq
+```
+
+### Assign taxonomy to zOTUs
+```
+~/usearch64 -sintax UNOISE_files/zotus.fa -db ~/SILVA_132_SINTAX/SILVA_132-90_SINTAX.udb --tabbedout zotus_sintax_annotations.txt -strand both -sintax_cutoff 0.8
 ```
