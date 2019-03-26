@@ -151,9 +151,7 @@ pairwise.t.test(mouse.div.split$M$mouse.even, mouse.div.split$M$Diet_group, p.ad
 pc_ko<-read.delim("~/Desktop/PICRUSt_files/metaG_predict.txt", header=T, row.names=1)
 
 
-
 ko_vitK<-c("K01851","K02552","K02361","K02551","K08680","K02549","K14759","K01911","K14760","K01661","K12073","K19222","K02548","K03183")
-
 
 #get KO of interest
 pc_ko_vitk<-pc_ko[row.names(pc_ko) %in% ko_vitK,]
