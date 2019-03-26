@@ -1,6 +1,6 @@
-# Processing of 16S rRNA gene amplicons
+## Processing of 16S rRNA gene amplicons with traditional OTUs (97% identity)
 
-## Merge Paired End Reads
+### Merge Paired End Reads
 ```
 #decompress the reads
 gunzip *.gz
@@ -28,22 +28,22 @@ mkdir mergedfastq
      0.12  Mean merged expected errors
 ```
 
-## Dereplicate sequences
+### Dereplicate sequences
 ```
 ./usearch64 -fastx_uniques mergedfastq/merged.fq -fastqout mergedfastq/uniques_combined_merged.fastq -sizeout
 ```
 
-## Remove Singeltons
+### Remove Singeltons
 ```
 ./usearch64 -sortbysize mergedfastq/uniques_combined_merged.fastq -fastqout mergedfastq/nosigs_uniques_combined_merged.fastq -minsize 2
 ```
 
-## Precluster Sequences
+### Precluster Sequences
 ```
 ./usearch64 -cluster_fast mergedfastq/nosigs_uniques_combined_merged.fastq -centroids_fastq mergedfastq/denoised_nosigs_uniques_combined_merged.fastq -id 0.9 -maxdiffs 5 -abskew 10 -sizein -sizeout -sort size
 ```
 
-## Reference-based OTU picking against the Silva v. 1.32
+### Reference-based OTU picking against the Silva v. 1.32
 ```
 #pull Silva and extract it
 # wget https://www.arb-silva.de/fileadmin/silva_databases/qiime/Silva_128_release.tgz
@@ -51,42 +51,24 @@ mkdir mergedfastq
 ./usearch64 -usearch_global mergedfastq/denoised_nosigs_uniques_combined_merged.fastq -id 0.97 -db ./Silva_128_release/SILVA_128_QIIME_release/rep_set/rep_set_16S_only/97/97_otus_16S.fasta  -strand plus -uc mergedfastq/ref_seqs.uc -dbmatched mergedfastq/closed_reference.fasta -notmatchedfq mergedfastq/failed_closed.fq
 ```
 
-## Sort by size and then de novo OTU picking on sequences that failed to hit Silva
+### Sort by size and then de novo OTU picking on sequences that failed to hit Silva
 ```
 ./usearch64 -sortbysize mergedfastq/failed_closed.fq -fastaout mergedfastq/sorted_failed_closed.fq
 
 ./usearch64 -cluster_otus mergedfastq/sorted_failed_closed.fq -minsize 2 -otus mergedfastq/denovo_otus.fasta -relabel OTU_dn_ -uparseout denovo_out.up
 ```
 
-## Combine the rep sets between de novo and reference-based OTU picking
+### Combine the rep sets between de novo and reference-based OTU picking
 ```
 cat mergedfastq/closed_reference.fasta mergedfastq/denovo_otus.fasta > full_rep_set.fna
 ```
 
-## Map rep_set back to pre-dereplicated sequences and make OTU tables
+### Map rep_set back to pre-dereplicated sequences and make OTU tables
 ```
 ./usearch64 -usearch_global mergedfastq/merged.fq -db mergedfastq/full_rep_set.fna -strand plus -id 0.97 -uc OTU_map.uc -otutabout OTU_table.txt
 ```
 
-## Assign taxonomy with SILVA 
+## Assign taxonomy with Sintax against SILVA (v. 1.32)
 ```
-assign_taxonomy.py -i full_rep_set.fna -o taxonomy -r Silva_128_release/SILVA_128_QIIME_release/rep_set/rep_set_16S_only/97/97_otus_16S.fasta -t '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/Silva_128_release/SILVA_128_QIIME_release/taxonomy/16S_only/97/consensus_taxonomy_all_levels.txt'
-
-#add tax to OTU table
-biom convert -i OTU_table.txt -o OTU_table.biom --table-type='OTU table' --to-hdf5
-
-biom add-metadata -i OTU_table.biom -o otu_table_tax.biom --observation-metadata-fp=taxonomy/full_rep_set_tax_assignments.txt --sc-separated=taxonomy --observation-header=OTUID,taxonomy
-
-#summarize OTU table
-biom summarize-table -i otu_table_tax.biom -o otu_table_summmary.txt
-
-#convert back to text file
-biom convert -i '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/otu_table_tax.biom' -o '/media/pattyjk/TOSHIBA EXT/MiSeq Runs/Wolfe_Mouse_cecal_16S_amplicons/otu_table_tax.txt' --to-tsv --table-type='OTU table' --header-key taxonomy
+~/usearch64 -sintax UNOISE_files/zotus.fa -db ~/SILVA_132_SINTAX/SILVA_132-90_SINTAX.udb --tabbedout zotus_sintax_annotations.txt -strand both -sintax_cutoff 0.8
 ```
-
-## Summarize taxonomy
-```
-summarize_taxa_through_plots.py -i otu_table_tax.biom -o tax_summary
-```
-
-
