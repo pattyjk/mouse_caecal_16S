@@ -192,5 +192,88 @@ ggplot(abundant_sig_taxa, aes(OTU, mean, fill=Order))+
   coord_flip()+
   geom_errorbar(aes(ymax=mean+se, ymin=mean-se, width=0.2), stat="identity")+
   ylab("Mean OTU Abundance")+
-  xlab("")+
+  xlab("")
   ```
+  
+  ## Plot data for diet
+```
+library(ggplot2)
+library(reshape2)
+library(vegan)
+library(tidyr)
+library(plyr)
+
+#read in metadata
+meta<-read.delim("mouse_caecal_16S/mouse_metadata.txt", header=T)
+
+#read in OTU table
+otu_table<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_table.txt", header=T, row.names=1)
+
+#rarefy OTU table
+otu_table_t<-t(otu_table)
+min(rowSums(otu_table_t))
+#11558
+otu_table_t<-rrarefy(otu_table_t, sample=11558)
+otu_table_t<-t(otu_table_t)
+
+#make significant OTU table for male/female
+sig_male<-which(male_diet_kw_output$P_value<0.05)
+sig_female<-which(female_diet_kw_output$P_value<0.05)
+
+sig_male<-male_diet_kw_output[row.names(male_diet_kw_output) %in% sig_male,]
+sig_female<-female_diet_kw_output[row.names(female_diet_kw_output) %in% sig_female,]
+
+otu_sig_male<-as.data.frame(otu_table_t[row.names(otu_table_t) %in% sig_male$OTU,])
+otu_sig_female<-as.data.frame(otu_table_t[row.names(otu_table_t) %in% sig_female$OTU,])
+
+otu_sig_male$OTU<-row.names(otu_sig_male)
+otu_sig_female$OTU<-row.names(otu_sig_female)
+
+#reshape OTU table, add meta data
+sig_male_m<-melt(otu_sig_male, id.vars = c('OTU'))
+sig_female_m<-melt(otu_sig_female, id.vars = c('OTU'))
+
+sig_male_m<-merge(sig_male_m, meta, by.x='variable', by.y='SampleID')
+sig_female_m<-merge(sig_female_m, meta, by.x='variable', by.y='SampleID')
+
+#get mean abundance
+otu_sig_male_sum<-ddply(sig_male_m, c("Sex", "OTU", "Diet_group"), summarize, mean=mean(value), sd=sd(value), n=length(value), se=sd/n)
+otu_sig_female_sum<-ddply(sig_female_m, c("Sex", "OTU", "Diet_group"), summarize, mean=mean(value), sd=sd(value), n=length(value), se=sd/n)
+
+#add taxonomy to data
+tax_anno<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_sintax_annotations.txt", header=F)
+tax_anno<-tax_anno[,c(-3,-2)]
+otu_sig_male_sum<-merge(otu_sig_male_sum, tax_anno, by.x='OTU', by.y='V1')
+otu_sig_female_sum<-merge(otu_sig_female_sum, tax_anno, by.x='OTU', by.y='V1')
+
+#split taxonomy into phylum, class, ect...
+otu_sig_male_sum<-separate(otu_sig_male_sum, V4, sep=',', into = c("Kingdom", 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'))
+otu_sig_female_sum<-separate(otu_sig_female_sum, V4, sep=',', into = c("Kingdom", 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'))
+
+#get only most abundant taxa
+male_abun<-which(otu_sig_male_sum$mean>100)
+female_unbun<-which(otu_sig_female_sum$mean>100)
+
+abun_otu_sig_male_sum<-otu_sig_male_sum[row.names(otu_sig_male_sum) %in% male_abun,]
+abun_otu_sig_female_sum<-otu_sig_female_sum[row.names(otu_sig_female_sum) %in% male_abun,]
+  
+
+#plot the data
+ggplot(abun_otu_sig_female_sum, aes(OTU, mean, fill=Genus))+
+  theme_bw()+
+  geom_bar(stat='identity')+
+  coord_flip()+
+  geom_errorbar(aes(ymax=mean+se, ymin=mean-se, width=0.2), stat="identity")+
+  ylab("Mean OTU Abundance")+
+  xlab("")+
+  facet_wrap(~Diet_group)
+  
+ggplot(abun_otu_sig_male_sum, aes(OTU, mean, fill=Genus))+
+  theme_bw()+
+  geom_bar(stat='identity')+
+  coord_flip()+
+  geom_errorbar(aes(ymax=mean+se, ymin=mean-se, width=0.2), stat="identity")+
+  ylab("Mean OTU Abundance")+
+  xlab("")+
+  facet_wrap(~Diet_group)
+```
