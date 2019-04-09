@@ -1,6 +1,7 @@
 ## Identify differentiall abundant OTUs bewteen male/female mice
 ```
 library(dplyr)
+library(plyr)
 #read in OTU table
 otu_table<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_table.txt", header=T, row.names=1)
 
@@ -55,7 +56,6 @@ sex_kw_output$p.value.bonferonni<-p.adjust(sex_kw_output$P_value, method='bonfer
 
 ## Identify taxa in male and female mice that respond to diets
 ```
-library(dplyr)
 #read in OTU table
 otu_table<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_table.txt", header=T, row.names=1)
 
@@ -63,7 +63,7 @@ otu_table<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_table.txt", header=T,
 meta<-read.delim("mouse_caecal_16S/mouse_metadata.txt", header=T)
 row.names(meta)<-meta$SampleID
 
-#remove extra samples (those without enough depth)
+#remove extra samples (those without enough sequencing depth)
 otu_table<-otu_table[,names(otu_table) %in% meta$SampleID]
 
 #match the sample IDs in map to columns
@@ -185,7 +185,7 @@ abundant_sig_taxa<-otu_sig_sum[row.names(otu_sig_sum) %in% abundant_taxa,]
 
 
 #plot data
-ggplot(abundant_sig_taxa, aes(OTU, mean, fill=Order))+
+ggplot(abundant_sig_taxa, aes(OTU, mean, fill=Genus))+
   geom_bar(stat='identity')+
   theme_bw()+
   facet_wrap(~Sex)+
@@ -266,7 +266,8 @@ ggplot(abun_otu_sig_female_sum, aes(OTU, mean, fill=Genus))+
   geom_errorbar(aes(ymax=mean+se, ymin=mean-se, width=0.2), stat="identity")+
   ylab("Mean OTU Abundance")+
   xlab("")+
-  facet_wrap(~Diet_group)
+  facet_wrap(~Diet_group)+
+  ggtitle("Female Mice")
   
 ggplot(abun_otu_sig_male_sum, aes(OTU, mean, fill=Genus))+
   theme_bw()+
@@ -275,5 +276,6 @@ ggplot(abun_otu_sig_male_sum, aes(OTU, mean, fill=Genus))+
   geom_errorbar(aes(ymax=mean+se, ymin=mean-se, width=0.2), stat="identity")+
   ylab("Mean OTU Abundance")+
   xlab("")+
+  ggtitle("Male Mice")+
   facet_wrap(~Diet_group)
 ```
