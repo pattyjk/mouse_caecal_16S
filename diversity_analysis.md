@@ -124,9 +124,8 @@ grid.arrange(total, fem, men, ncol=3)
 
 ## Test for significance of beta diversity between sexes/diet groups
 ```
-
-
-
+To add
+```
 
 ## Alpha diversity
 ````
@@ -174,7 +173,6 @@ bartlett.test(mouse.div$mouse.shan ~ mouse.div$Sex)
 
 bartlett.test(mouse.div$mouse.even ~ mouse.div$Sex)
 #Bartlett's K-squared = 91.56, df = 1, p-value < 2.2e-16
-
 
 #t-test to test for significance between male and female mice
 t.test(mouse.div$mouse.obs ~ mouse.div$Sex)
