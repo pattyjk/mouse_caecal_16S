@@ -124,7 +124,63 @@ grid.arrange(total, fem, men, ncol=3)
 
 ## Test for significance of beta diversity between sexes/diet groups
 ```
-To add
+library(vegan)
+
+#read in zOTU table
+otu_table<-read.delim("mouse_caecal_16S/UNOISE_files/zotus_table.txt", header=T, row.names = 1)
+dim(otu_table)
+#1214 by 115
+
+#read in meta data
+meta<-read.delim("mouse_caecal_16S/mouse_metadata.txt", header=T)
+dim(meta)
+# 117 by 35
+
+#transpose table
+otu_table_t<-t(otu_table)
+
+#get sample counts
+which(rowSums(otu_table_t)<3000)
+
+#remove sample M30 and M21
+otu_table_t<-otu_table_t[c(-39, -29),]
+
+#order metadata by OTU table order
+row.names(meta)<-meta$SampleID
+meta<-meta[row.names(otu_table_t),]
+
+#rarefy data
+otu_rare<-rrarefy(otu_table_t, sample=11558)
+
+#calculate adons
+adonis(otu_rare ~ Diet_group + Sex, data=meta, permutations =10000, method = 'bray')
+
+#            Df SumsOfSqs MeanSqs F.Model      R2    Pr(>F)    
+#Diet_group   5    1.1224 0.22449  1.7820 0.07409 9.999e-05 ***
+#Sex          1    0.6742 0.67416  5.3516 0.04450 9.999e-05 ***
+#Residuals  106   13.3533 0.12597         0.88141              
+
+
+#split meta data by sex and create sex-specific OTU tables
+meta_split<-split(meta, meta$Sex)
+
+male_otu<-otu_rare[row.names(meta_split$M),]
+female_otu<-otu_rare[row.names(meta_split$F),]
+
+#adonis of diet group by for male/female
+
+adonis(male_otu ~ Diet_group, data=meta_split$M, permutations =10000, method = 'bray')
+#           Df SumsOfSqs MeanSqs F.Model      R2    Pr(>F)    
+#Diet_group  5    1.0651 0.21302  1.7914 0.14939 9.999e-05 ***
+#Residuals  51    6.0648 0.11892         0.85061              
+#Total      56    7.1299                 1.00000 
+
+adonis(female_otu ~ Diet_group, data=meta_split$F, permutations =10000, method = 'bray')
+#           Df SumsOfSqs MeanSqs F.Model      R2    Pr(>F)    
+#Diet_group  5    1.2195 0.24389  1.9884 0.16586 9.999e-05 ***
+#Residuals  50    6.1330 0.12266         0.83414              
+#Total      55    7.3524                 1.00000             
+
 ```
 
 ## Alpha diversity
